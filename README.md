@@ -46,7 +46,7 @@ graph LR
 ## 🚀 How to Run
 ```bash
 # Clone the repository
-git clone [https://github.com/kou-sato-ds/Scalable-Spectral-Analysis-Pipeline.git](https://github.com/kou-sato-ds/Scalable-Spectral-Analysis-Pipeline.git)
+git clone https://github.com/kou-sato-ds/Scalable-Spectral-Analysis-Pipeline.git
 
 # Install dependencies (Example)
 pip install pyspark
