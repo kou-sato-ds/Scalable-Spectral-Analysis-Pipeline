@@ -1,0 +1,8 @@
+# Data files
+data/
+*.csv
+*.zip
+
+# Python caches
+__pycache__/
+.ipynb_checkpoints/
