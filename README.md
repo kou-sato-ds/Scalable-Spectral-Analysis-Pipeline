@@ -53,3 +53,20 @@ pip install pyspark
 
 # Initialize Spark Session & Preprocessing
 python src/preprocess.py
+
+## 🛠️ Environment Setup (Updated 2026-04-03)
+
+### Prerequisites
+- **Python**: 3.14+
+- **Java (JDK)**: Amazon Corretto 17 (Required for PySpark engine)
+- **PySpark**: 3.5.0+
+
+### Step-by-Step
+1. Install Java 17 (Windows users should use `.msi` installer).
+2. Run `pip install pyspark`.
+3. Verify installation with `python src/preprocess.py`.
+
+### Current Progress
+- [x] Initialized Spark Session with AQE.
+- [x] Dynamic Schema Definition for 120+ features.
+- [x] Successfully loaded 1,322 records from `train.csv`.
