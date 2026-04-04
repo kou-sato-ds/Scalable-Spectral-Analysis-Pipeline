@@ -1,6 +1,6 @@
 # # Scalable Spectral Analysis Pipeline 🌲🌾
 
-![Python CI](https://github.com/ユーザー名/リポジトリ名/actions/workflows/ci.yml/badge.svg)
+![Python CI](https://github.com/kou-sato-ds/Scalable-Spectral-Analysis-Pipeline/actions/workflows/ci.yml/badge.svg)
 
 ![Python](https://img.shields.io/badge/Python-3.14+-blue?logo=python)
 ![Apache Spark](https://img.shields.io/badge/Apache_Spark-3.5.0-orange?logo=apachespark)
