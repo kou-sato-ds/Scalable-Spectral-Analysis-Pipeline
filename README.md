@@ -20,7 +20,7 @@
 4.  **Robust Inference Engine**: 訓練/テストデータの次元不一致補正、およびテンプレートマージによる完全な提出フォーマット保証。
 5.  **Continuous Integration (CI)**: GitHub Actionsにより、コードの変更ごとに自動ビルドと構文チェックを実行。パイプラインの品質と再現性を継続的に担保。
 
-！[vscode](./Images/vscode.png)
+![vscode](./Images/vscode.png)
 *実務を想定し、submissionsやadrを含む洗練されたディレクトリ構造で管理*
 
 ## 💡 Key Challenges & Solutions (ADR: 実装の意思決定)
@@ -40,7 +40,7 @@
 - **課題**: 提供されたテストデータ（550件）と提出用テンプレート（802件）の行数が一致せず、提出エラーが発生。
 - **解決**: `sample_submit.csv` をマスターとした **Left-Join ロジック**を構築。予測がないIDに対してもデフォルト値を割り当てることで、どのような不完全データに対しても100%受理される堅牢な出力エンジンを実装しました。
 
-！[challenges](./Images/challenges.png)
+![challenges](./Images/challenges.png)
 *継続的な改善により、着実にスコアを向上させた実績*
 
 ## 📁 Directory Structure
