@@ -4,3 +4,4 @@ pyspark
 scikit-learn
 joblib
 pyarrow
+lightgbm
