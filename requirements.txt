@@ -1,0 +1,6 @@
+﻿pandas
+numpy
+pyspark
+scikit-learn
+joblib
+pyarrow

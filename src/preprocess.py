@@ -1,52 +1,30 @@
-import sys
+import os
+import pandas as pd
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, StringType, DoubleType
+from pyspark.sql import functions as F
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.functions import vector_to_array
 
-def create_spark_session():
-    """
-    AWS Glueやローカル環境での実行を想定したSpark Sessionの初期化。
-    """
-    return SparkSession.builder \
-        .appName("Scalable-Spectral-Analysis") \
-        .config("spark.sql.adaptive.enabled", "true") \
-        .getOrCreate() # get_all_or_createを修正
+def get_target_path(base_name):
+    """(1)が付いているファイルと付いていないファイルの両方を探す"""
+    raw_dir = "data/raw"
+    p1 = os.path.join(raw_dir, f"{base_name} (1).csv")
+    p2 = os.path.join(raw_dir, f"{base_name}.csv")
+    return p1 if os.path.exists(p1) else p2
 
 def main():
-    # 1. Spark Sessionの起動
-    spark = create_spark_session()
-    print("Spark Session initialized successfully with AQE enabled.")
-
-    # 2. スキーマ（型）の定義
-    feature_fields = [
-        StructField(f"feature_{i:03}", DoubleType(), True) for i in range(120)
-    ]
+    spark = SparkSession.builder.appName("Spectral-Preprocess").getOrCreate()
     
-    # メタデータと120個の特徴量を合体
-    schema = StructType([
-        StructField("sample_number", StringType(), True),
-        StructField("species_number", StringType(), True),
-    ] + feature_fields)
-
-    print(f"Schema defined: Total fields = {len(schema.fields)}")
-
-    # 3. データの読み込み（索敵開始）
-    try:
-        # data/train.csv を読み込みます
-        train_df = spark.read.csv("data/train.csv", header=True, schema=schema)
-        
-        print(f"Total records loaded: {train_df.count()}")
-        train_df.show(5) # 最初の5行を偵察
-
-        # 4. 代表的な特徴量の統計量をスキャン
-        print("Scanning data distribution...")
-        train_df.select("feature_000", "feature_060", "feature_119").summary().show()
-
-    except Exception as e:
-        print(f"Error loading data: {e}")
-        print("Hint: Check if 'data/train.csv' exists.")
+    # 読み込み
+    train_path = get_target_path("train")
+    test_path = get_target_path("test")
     
-    print("Ready for large-scale spectral data processing.")
-
-# 最後に main() を呼び出すだけ
-if __name__ == "__main__":
-    main()
+    # 保存先ディレクトリの作成
+    os.makedirs("data/processed", exist_ok=True)
+    
+    # --- ここに前述のprocess_and_saveロジックが入る ---
+    # 保存先を data/processed/ に指定
+    # process_and_save(spark, train_path, "data/processed/processed_train")
+    # process_and_save(spark, test_path, "data/processed/processed_test")
+    
+    spark.stop()
