@@ -66,3 +66,9 @@
 - **v3 (LGBM + SNV + 1st Diff)**: Score 42.31
 - **Ultimate (LGBM + Domain FE + Spark Ensemble)**: Score 42.47
 - **Mean CV Accuracy**: **0.9954** (High internal validation performance)
+
+### 🛠️ 開発スタック
+- **Validation**: Pydantic (厳格なデータ品質保証)
+- **Data Engine**: PySpark / Apache Spark (大規模分散処理)
+- **Modeling**: LightGBM
+- **Processing**: NumPy, SciPy (物理補正/SGフィルタ)

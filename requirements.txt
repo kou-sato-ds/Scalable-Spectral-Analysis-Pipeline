@@ -1,7 +1,9 @@
-﻿pandas
-numpy
-pyspark
-scikit-learn
+﻿scikit-learn
 joblib
 pyarrow
 lightgbm
+pydantic>=2.0.0
+pyspark>=3.0.0
+numpy
+pandas
+scipy
