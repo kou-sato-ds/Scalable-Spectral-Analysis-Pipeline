@@ -20,6 +20,10 @@
 4.  **Robust Inference Engine**: 訓練/テストデータの次元不一致補正、およびテンプレートマージによる完全な提出フォーマット保証。
 5.  **Continuous Integration (CI)**: GitHub Actionsにより、コードの変更ごとに自動ビルドと構文チェックを実行。パイプラインの品質と再現性を継続的に担保。
 
+### 📊 Cluster Status
+![Spark UI](./Images/spark_ui.png)
+*Local Spark Cluster: 1 Master, 2 Workers (Total 24 Cores) 稼働中*
+
 ![vscode](./Images/vscode.png)
 *実務を想定し、submissionsやadrを含む洗練されたディレクトリ構造で管理*
 

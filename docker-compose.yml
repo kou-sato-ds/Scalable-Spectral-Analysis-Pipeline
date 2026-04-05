@@ -4,9 +4,11 @@ services:
     container_name: spark-master
     ports:
       - "8080:8080" # Spark Web UI用
-      - "7077:7077"
+      - "7077:7077" # Spark Master 内部通信用
     environment:
       - SPARK_MODE=master
+    # コンテナ起動時に Spark Master プロセスを永続実行させる
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
 
   spark-worker:
     build: .
@@ -15,5 +17,7 @@ services:
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
+    # コンテナ起動時に Worker プロセスを起動し、Master に登録し続ける
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     deploy:
-      replicas: 2 # 2台のWorkerで並列処理！
+      replicas: 2 # 2台のWorkerで並列処理を実現
