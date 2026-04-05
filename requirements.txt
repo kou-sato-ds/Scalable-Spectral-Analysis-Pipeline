@@ -1,9 +1,13 @@
-﻿scikit-learn
-joblib
-pyarrow
-lightgbm
+﻿# --- Core Engine ---
+pyspark==3.5.0
+py4j==0.10.9.7
 pydantic>=2.0.0
-pyspark>=3.0.0
+
+# --- Data Science Stack ---
 numpy
 pandas
 scipy
+scikit-learn
+joblib
+pyarrow
+lightgbm

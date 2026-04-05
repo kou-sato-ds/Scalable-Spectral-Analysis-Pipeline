@@ -1,0 +1,19 @@
+services:
+  spark-master:
+    build: .
+    container_name: spark-master
+    ports:
+      - "8080:8080" # Spark Web UI用
+      - "7077:7077"
+    environment:
+      - SPARK_MODE=master
+
+  spark-worker:
+    build: .
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    deploy:
+      replicas: 2 # 2台のWorkerで並列処理！

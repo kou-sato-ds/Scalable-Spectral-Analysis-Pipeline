@@ -2,7 +2,7 @@
 
 ![Python CI](https://github.com/kou-sato-ds/Scalable-Spectral-Analysis-Pipeline/actions/workflows/ci.yml/badge.svg)
 
-![Python](https://img.shields.io/badge/Python-3.14+-blue?logo=python)
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
 ![Apache Spark](https://img.shields.io/badge/Apache_Spark-3.5.0-orange?logo=apachespark)
 ![LightGBM](https://img.shields.io/badge/Model-LightGBM-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
@@ -67,8 +67,19 @@
 - **Ultimate (LGBM + Domain FE + Spark Ensemble)**: Score 42.47
 - **Mean CV Accuracy**: **0.9954** (High internal validation performance)
 
-### 🛠️ 開発スタック
-- **Validation**: Pydantic (厳格なデータ品質保証)
-- **Data Engine**: PySpark / Apache Spark (大規模分散処理)
-- **Modeling**: LightGBM
-- **Processing**: NumPy, SciPy (物理補正/SGフィルタ)
+### 🛠️ 開発スタック (Scalable Infrastructure)
+- **Container**: Docker / Docker Compose (Multi-node Cluster simulation)
+- **Runtime**: Python 3.11 / **Java 21 (OpenJDK)**
+- **Data Engine**: **Apache Spark 3.5.0** (Distributed Processing)
+- **Validation**: Pydantic v2 (Strict Type & Dimension Check)
+- **ML Stack**: LightGBM, Scikit-learn
+
+## 🚀 Getting Started (Docker)
+本プロジェクトは Docker Compose を利用して、ローカルに分散処理環境を構築できます。
+
+```bash
+# クラスタのビルドと起動
+docker-compose up --build
+
+# Spark UI (Master) へアクセス
+# http://localhost:8080
