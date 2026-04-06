@@ -19,6 +19,10 @@
 3.  **Scalable Training**: LightGBMを用いた 5-fold CV。
 4.  **Robust Inference Engine**: 訓練/テストデータの次元不一致補正、およびテンプレートマージによる完全な提出フォーマット保証。
 5.  **Continuous Integration (CI)**: GitHub Actionsにより、コードの変更ごとに自動ビルドと構文チェックを実行。パイプラインの品質と再現性を継続的に担保。
+### 🛡️ Robust Data Validation
+- **Pydantic Guard**: 1,556次元のスペクトル形状を厳格にチェック。
+- **Schema Enforcement**: 分散処理の各ステージで、型の不整合や次元の欠落を許さない堅牢なパイプライン。
+- **Hybrid Processing**: Sparkの分散力と、NumPyの高度な物理演算を「Pandas UDF」で融合。
 
 ### 📊 Cluster Status
 ![Spark UI](./Images/spark_ui.png)

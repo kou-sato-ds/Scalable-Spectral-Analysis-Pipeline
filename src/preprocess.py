@@ -17,10 +17,10 @@ def process_and_save(spark, input_path, output_name): # タイポ修正
     # 1. 読み込み
     df = spark.read.csv(input_path, header=True, inferSchema=True)
     # 2. 特徴量カラム（id, target以外）を特定
-    wavelenght_cols = [c for c in df.columns if c not in ["id", "target"]]
+    wavelength_cols = [c for c in df.columns if c not in ["id", "target"]]
     # 3. VectorAssemblerによるベクトル化
     # 変数名をwavelenght_colsに統一
-    assembler = VectorAssembler(inputCols=wavelenght_cols, outputCol="features")
+    assembler = VectorAssembler(inputCols=wavelength_cols, outputCol="features")
     df_vector = assembler.transform(df)
 
     # 4. 必要な列だけ選択してParquetで保存
