@@ -24,6 +24,10 @@
 - **Schema Enforcement**: 分散処理の各ステージで、型の不整合や次元の欠落を許さない堅牢なパイプライン。
 - **Hybrid Processing**: Sparkの分散力と、NumPyの高度な物理演算を「Pandas UDF」で融合。
 
+### 🔧 Infrastructure & Scalability
+- **Volume Mounting**: Docker Composeを利用し、ホスト（Windows）側の資産とコンテナ（Spark Cluster）をリアルタイム同期。開発効率とデータの永続性を両立。
+- **Container-Native Debugging**: `docker exec` を通じたコンテナ内での直接的なデバッグ・検証プロセスを確立し、分散環境特有のファイルパス問題やライブラリ整合性を克服。
+
 ### 📊 Cluster Status
 ![Spark UI](./Images/spark_ui.png)
 *Local Spark Cluster: 1 Master, 2 Workers (Total 24 Cores) 稼働中*

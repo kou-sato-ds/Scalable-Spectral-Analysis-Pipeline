@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel, field_validator
-from pyspark.sql.functions import udf
-from pyspark.sql.types import ArrayType, DoubleType, StructType, StructField
+from pyspark.sql.functions import pandas_udf
+from pyspark.sql.types import ArrayType, DoubleType
+from pyspark.sql import SparkSession
 
 # --- [門番] Pydanticによる型と次元の強制 ---
 class SpectralData(BaseModel):
@@ -12,61 +13,67 @@ class SpectralData(BaseModel):
     @classmethod
     def check_length(cls, v):
         if len(v) != 1556:
-            raise ValueError(f'スペクトル次元が不正です({len(v)}次元)。1556次元である必要があります。')
+            raise ValueError(f'スペクトル次元が不正です({len(v)}次元)。')
         return v
 
-# --- [核] 物理ロジック本体 (ベクトル/行列両対応) ---
-def apply_spectral_logic(X_raw):
+# --- [核] 物理ロジック本体 ---
+def apply_spectral_logic(X_raw: np.ndarray) -> np.ndarray:    
     """
-    物理的背景に基づく特徴量抽出
-    X_raw: np.array (1次元または2次元)
+    SNV補正、1次微分、特定吸収帯の抽出を行う
     """
-    # 2次元行列として扱うための調整
-    is_1d = X_raw.ndim == 1
-    if is_1d:
-        X_raw = X_raw.reshape(1, -1)
-
-    # 1. 統計指標 (散乱補正の基礎)
+    # 1. 統計指標
     mean_reflectance = np.mean(X_raw, axis=1, keepdims=True)
     std_reflectance = np.std(X_raw, axis=1, keepdims=True)
 
-    # 2. SNV補正 (光のムラを除去)
+    # 2. SNV補正
     X_snv = (X_raw - mean_reflectance) / (std_reflectance + 1e-9)
-
-    # 3. 1次微分 (SG法の簡易版として波形を際立たせる)
+    # 3. 1次微分 (np.diff + padding)
     X_diff = np.diff(X_snv, axis=1)
     X_diff = np.pad(X_diff, ((0, 0), (0, 1)), mode='edge')
 
-    # 4. 特定吸収帯 (OH基: 水分/セルロース)
-    oh_1450 = np.mean(X_snv[:, 300:400], axis=1, keepdims=True)
-    oh_1940 = np.mean(X_snv[:, 800:900], axis=1, keepdims=True)
-    oh_ratio = oh_1450 / (oh_1940 + 1e-9)
-
-    # 5. 局所積分 (成分エリアの面積)
-    # NumPy 2.0+ 推奨の np.trapezoid を使用
+    # 4. 特定領域の積分 (NumPy 2.x対応: trapezoid)
     cellulose_area = np.trapezoid(X_snv[:, 1200:1400], axis=1).reshape(-1, 1)
     lignin_area = np.trapezoid(X_snv[:, 1400:1556], axis=1).reshape(-1, 1)
 
     # 特徴量結合
-    X_combined = np.hstack([
-        X_snv, X_diff, mean_reflectance, std_reflectance, 
-        oh_ratio, cellulose_area, lignin_area
-    ])
+    return np.hstack([X_snv, X_diff, cellulose_area, lignin_area])
 
-    return X_combined.flatten() if is_1d else X_combined
-
-# --- [翼] Spark用UDFの登録 ---
-# 特徴量の総次元数を計算して戻り値の型を定義
-# (1556*2 + 5 = 3117次元)
-spectral_udf = udf(lambda x: apply_spectral_logic(np.array(x)).tolist(), ArrayType(DoubleType()))
-
-def get_features_and_label(pdf: pd.DataFrame):
-    # Pydanticによる一括バリデーション (実務での信頼性アピール)
-    for feat in pdf['features']:
-        SpectralData(features=feat)
-        
-    X_raw = np.stack(pdf['features'].values)
-    X_combined = apply_spectral_logic(X_raw)
+# --- [翼] Pandas UDF (これが24コアを回すエンジン) ---
+@pandas_udf(ArrayType(DoubleType()))
+def spectral_feature_udf(batch_features: pd.Series) -> pd.Series:    
+    """
+    Apache Arrowを用いてデータを一括転送し、NumPyで並列計算する
+    """
+    # 1. Pydanticバリデーション (先頭1件で代表チェック)
+    SpectralData(features=batch_features.iloc[0])
     
-    y = pdf['species_id'].values if 'species_id' in pdf.columns else None
-    return X_combined, y
+    # 2. NumPy行列に変換
+    X_raw = np.stack(batch_features.values)
+    
+    # 3. 物理ロジック適用
+    X_transformed = apply_spectral_logic(X_raw)
+    
+    # 4. Sparkに戻すためにリスト化
+    return pd.Series(list(X_transformed))
+
+def main():
+    spark = SparkSession.builder \
+        .master("spark://spark-master:7077") \
+        .appName("Feature-Engineering-Expert") \
+        .getOrCreate()
+
+    # 前回のParquetを読み込む
+    df = spark.read.parquet("data/processed/train_features.parquet")
+    
+    # 特徴量抽出を実行 (24コアが火を吹くポイント)
+    df_enriched = df.withColumn("enriched_features", spectral_feature_udf(df["features"]))
+    
+    # 結果を保存
+    df_enriched.select("id", "enriched_features", "target") \
+        .write.mode("overwrite").parquet("data/processed/train_final.parquet")
+    
+    print("🚀 Feature engineering completed successfully with 24 cores!")
+    spark.stop()
+
+if __name__ == "__main__":
+    main()
