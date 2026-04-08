@@ -15,8 +15,9 @@ def main():
     # 1. データの読み込み
     PROC_DIR = "data/processed"
     RAW_DIR = "data/raw"
-    df = pd.read_parquet(os.path.join(PROC_DIR, "train_with_folds.parquet"))
-    
+
+    # 修正前: df = spark.read.parquet("data/processed/train_features.parquet")
+    df = spark.read.parquet("data/processed/train_with_folds.parquet")    
     all_models = []
     test_probs = []
 

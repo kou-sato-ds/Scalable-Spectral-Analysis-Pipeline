@@ -56,24 +56,32 @@ def spectral_feature_udf(batch_features: pd.Series) -> pd.Series:
     # 4. Sparkに戻すためにリスト化
     return pd.Series(list(X_transformed))
 
-def main():
-    spark = SparkSession.builder \
-        .master("spark://spark-master:7077") \
-        .appName("Feature-Engineering-Expert") \
-        .getOrCreate()
+# --- [インターフェース] main.py から呼び出すためのブリッジ ---
+def get_features_and_label(df):
+    """
+    main.py から呼ばれる関数。
+    """
+    # もし渡された df が Spark DataFrame なら repartition を実行
+    # (AttributeError を防ぐための安全策)
+    if hasattr(df, "repartition"):
+        print("--- Parallelizing with Spark (24 Cores) ---")
+        df = df.repartition(48)
+        # 物理ロジック(Pandas UDF)の適用
+        df = df.withColumn(
+            "enriched_features", 
+            spectral_feature_udf(df["features"])
+        )
+        # 最後に Pandas に変換してモデル学習へ渡す
+        pdf = df.toPandas()
+    else:
+        # すでに Pandas の場合は Spark を通さずに処理（小規模データ用）
+        print("--- Processing with Pandas (Single Core) ---")
+        # 直接 UDF の中身のロジックを呼ぶ
+        X_transformed = apply_spectral_logic(np.stack(df["features"].values))
+        pdf = df.copy()
+        pdf["enriched_features"] = list(X_transformed)
 
-    # 前回のParquetを読み込む
-    df = spark.read.parquet("data/processed/train_features.parquet")
-    
-    # 特徴量抽出を実行 (24コアが火を吹くポイント)
-    df_enriched = df.withColumn("enriched_features", spectral_feature_udf(df["features"]))
-    
-    # 結果を保存
-    df_enriched.select("id", "enriched_features", "target") \
-        .write.mode("overwrite").parquet("data/processed/train_final.parquet")
-    
-    print("🚀 Feature engineering completed successfully with 24 cores!")
-    spark.stop()
-
-if __name__ == "__main__":
-    main()
+    # NumPy配列として返す（LightGBMが食べやすい形に）
+    X = np.stack(pdf["enriched_features"].values)
+    y = pdf["target"].values
+    return X, y
