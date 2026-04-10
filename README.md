@@ -117,3 +117,11 @@ docker run --rm -it finish-buster-spark
 
 ### 3. 超高速コンベア（Apache Arrow）の開通
 食材運搬係の Arrow が、シェフ（Spark）から盛り付け担当（Pandas）へ、食材を箱に詰め直さず（シリアライズせずに）そのままコンベアで流せるように設定。成功した `toPandas()` の正体。
+
+### 4. Python 3.14 環境における起動プロセスのハック (2026-04-10 Update) 🆕
+
+- **課題**: Python 3.14 (Preview版) および PySpark 4.1.1 環境において、Spark内部のパス解決スクリプト (`find_spark_home.py`) が `pyspark` モジュールを捕捉できず、`AttributeError: 'NoneType' object has no attribute 'origin'` によりセッション起動が停止。
+- **解決**: 
+  - Windows PowerShell レイヤーで `$env:PYTHONPATH` および `$env:SPARK_HOME` を直接インジェクションし、スクリプトによる自動探索をバイパス。
+  - さらに Java 21 の強固なメモリ保護を突破するため、起動オプションに `--add-opens=java.base/java.nio=ALL-UNNAMED` を強制注入。
+- **成果**: 最新鋭の実行スタック（Py 3.14 / Java 21 / Spark 4.1.1）での **Spark Session 起動に完全成功**。1,500次元の超多カラムデータに対する Logical Plan (論理計画) の正常性を確認済み。
