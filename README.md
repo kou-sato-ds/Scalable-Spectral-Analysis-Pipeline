@@ -125,3 +125,13 @@ docker run --rm -it finish-buster-spark
   - Windows PowerShell レイヤーで `$env:PYTHONPATH` および `$env:SPARK_HOME` を直接インジェクションし、スクリプトによる自動探索をバイパス。
   - さらに Java 21 の強固なメモリ保護を突破するため、起動オプションに `--add-opens=java.base/java.nio=ALL-UNNAMED` を強制注入。
 - **成果**: 最新鋭の実行スタック（Py 3.14 / Java 21 / Spark 4.1.1）での **Spark Session 起動に完全成功**。1,500次元の超多カラムデータに対する Logical Plan (論理計画) の正常性を確認済み。
+
+### 📊 Verification: Data Retrieval Success (2026-04-11) 🆕
+
+インフラの再構築後、1,500次元を超える巨大データフレームから実データを抽出・表示することに成功。最新の実行スタックが理論だけでなく、実務レベルで稼働することを実証しました。
+
+![Data Verification](./Images/success_show.png)
+*VSCodeターミナルでの実行結果：`sample number` をキーにスペクトル数値が正しくロードされていることを確認。*
+
+![Spark UI Environment](./Images/spark_env.png)
+*Spark UI (Environment): Java 21 (Oracle Corporation) および PySpark 4.1.1 が正常にリンクされ、24スレッドの並列リソースが開放されている状態。*
