@@ -36,6 +36,9 @@
 ![Spark UI](./Images/spark_ui.png)
 *Local Spark Cluster: 1 Master, 2 Workers (Total 24 Cores) 稼働中*
 
+![Spark UI 24 Cores](./Images/spark_ui_24cores.png)
+*Local Spark Cluster: 1 Master, 2 Workers (Total 24 Cores) 稼働確認済み*
+
 ![vscode](./Images/vscode.png)
 *実務を想定し、submissionsやadrを含む洗練されたディレクトリ構造で管理*
 ## 💡 Key Challenges & Solutions (ADR: 実装の意思決定)
@@ -63,6 +66,12 @@
 ![challenges](./Images/challenges.png)
 *継続的な改善により、着実にスコアを向上させた実績*
 
+### 2. Java 21 世代における「メモリ制限」の突破
+- **課題**: Java 21 では JVM のカプセル化が強化され、Spark/Arrow が内部メモリ（`java.nio`）にアクセスできずクラッシュする。
+- **解決**: `JDK_JAVA_OPTIONS` を Docker レイヤーで定義し、実行パスを `ALL-UNNAMED` に開放。
+
+![Docker Startup Log](./Images/docker_startup.png)
+*JVMオプションが正しく注入され、起動している様子*
 
 ## 📁 Directory Structure
 
@@ -88,6 +97,16 @@
   - **v3 (LGBM + SNV + 1st Diff)**: Score 42.31
   - **Ultimate (LGBM + Domain FE + Spark Ensemble)**: Score 42.47
   - **Mean CV Accuracy**: **0.9954** (High internal validation performance)
+
+- **Mean CV Accuracy**: **0.9954** (高い内部検証性能を確認)
+
+#### 🔄 Cross Validation Logs
+| Fold 0 & 1 | Fold 2 & 3 | Fold 4 (Final) |
+| :---: | :---: | :---: |
+| ![Fold 0-1](./Images/fold01_log.png) | ![Fold 2-3](./Images/fold23_log.png) | ![Fold 4](./Images/fold4_log.png) |
+
+#### 🏆 Final Score (SIGNATE)
+![SIGNATE Score](./Images/signate_score.png)
 
 ## 🚀 Getting Started (Docker)
 
@@ -118,7 +137,7 @@ docker run --rm -it finish-buster-spark
 ### 3. 超高速コンベア（Apache Arrow）の開通
 食材運搬係の Arrow が、シェフ（Spark）から盛り付け担当（Pandas）へ、食材を箱に詰め直さず（シリアライズせずに）そのままコンベアで流せるように設定。成功した `toPandas()` の正体。
 
-### 4. Python 3.14 環境における起動プロセスのハック (2026-04-10 Update) 🆕
+### 4. Python 3.14 環境における起動プロセスのハック (2026-04-10 Update) 
 
 - **課題**: Python 3.14 (Preview版) および PySpark 4.1.1 環境において、Spark内部のパス解決スクリプト (`find_spark_home.py`) が `pyspark` モジュールを捕捉できず、`AttributeError: 'NoneType' object has no attribute 'origin'` によりセッション起動が停止。
 - **解決**: 
@@ -126,7 +145,15 @@ docker run --rm -it finish-buster-spark
   - さらに Java 21 の強固なメモリ保護を突破するため、起動オプションに `--add-opens=java.base/java.nio=ALL-UNNAMED` を強制注入。
 - **成果**: 最新鋭の実行スタック（Py 3.14 / Java 21 / Spark 4.1.1）での **Spark Session 起動に完全成功**。1,500次元の超多カラムデータに対する Logical Plan (論理計画) の正常性を確認済み。
 
-### 📊 Verification: Data Retrieval Success (2026-04-11) 🆕
+---
+## 🛠 Behind the Scenes: The "Night of Infrastructure" (2026-04-12)
+環境構築の試行錯誤を「キッチンの配管工事」に例えて整理。
+
+1. **耐火基準(Java 21)への適合**: セキュリティが厳しく「ガス管(メモリ)に触るな」という警告を、特例承認(`--add-opens`)で突破。
+2. **超高速コンベア(Arrow)の開通**: 食材を箱詰め(シリアライズ)せず、そのまま盛り付け担当(Pandas)へ流す高速化を実現。
+3. **24口コンロ(24 Cores)の全開**: 当初12コアだった火力を、Workerの増設により24コアまで引き上げ。計算速度を倍増させました。
+
+### 📊 Verification: Data Retrieval Success (2026-04-11) 
 
 インフラの再構築後、1,500次元を超える巨大データフレームから実データを抽出・表示することに成功。最新の実行スタックが理論だけでなく、実務レベルで稼働することを実証しました。
 
