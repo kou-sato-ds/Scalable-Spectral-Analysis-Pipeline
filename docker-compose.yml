@@ -7,11 +7,12 @@ services:
       - "7077:7077"
     environment:
       - SPARK_MODE=master
-    # --- ここを追加 ---
+      # Java 21の内部メモリ制約を解除し、Arrow高速化を有効にします
+      - SPARK_DAEMON_JAVA_OPTS=--add-opens=java.base/java.nio=ALL-UNNAMED
+      - JDK_JAVA_OPTIONS=--add-opens=java.base/java.nio=ALL-UNNAMED
     volumes:
       - .:/app
     working_dir: /app
-    # ----------------
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
 
   spark-worker:
@@ -21,11 +22,12 @@ services:
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
-    # --- ここを追加 ---
+      # Worker側（Executor）にも同様のJavaオプションを適用します
+      - SPARK_DAEMON_JAVA_OPTS=--add-opens=java.base/java.nio=ALL-UNNAMED
+      - JDK_JAVA_OPTIONS=--add-opens=java.base/java.nio=ALL-UNNAMED
     volumes:
       - .:/app
     working_dir: /app
-    # ----------------
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     deploy:
       replicas: 2

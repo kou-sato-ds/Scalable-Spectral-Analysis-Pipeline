@@ -162,3 +162,15 @@ docker run --rm -it finish-buster-spark
 
 ![Spark UI Environment](./Images/spark_env.png)
 *Spark UI (Environment): Java 21 (Oracle Corporation) および PySpark 4.1.1 が正常にリンクされ、24スレッドの並列リソースが開放されている状態。*
+
+### 📊 Cluster Status (2026-04-12 Updated)
+![Spark UI 24 Cores](./Images/spark_ui_24cores.png)
+*Local Spark Cluster: 1 Master, 2 Workers (Total 24 Cores) 稼働確認済み*
+当初12スレッドだったリソースを、Worker増設によりマシンの限界である24スレッドまで引き上げ、大規模特徴量生成のさらなる高速化を実現。
+
+### 💡 Key Challenges: Java 21 & Infrastructure
+- **課題**: Java 21 の厳格なメモリ保護により、Spark/Arrow が内部メモリ (`java.nio`) にアクセスできずクラッシュする。
+- **解決**: `JDK_JAVA_OPTIONS` を Docker レイヤーで定義し、実行パスを `ALL-UNNAMED` に開放。
+
+![Docker Startup Log](./Images/docker_startup.png)
+*JVMオプションが正しく注入され、最新のLTS環境でSpark Sessionが起動している様子*
