@@ -174,3 +174,44 @@ docker run --rm -it finish-buster-spark
 
 ![Docker Startup Log](./Images/docker_startup.png)
 *JVMオプションが正しく注入され、最新のLTS環境でSpark Sessionが起動している様子*
+
+## ☁️ Cloud Transformation: Scaling to AWS Glue (2026-04-14 Update)
+
+ローカル環境（24コア）の物理的限界を超え、さらなるスケーラビリティを追求するため、**AWS Glue (PySpark)** へのパイプライン移行を実施しました。
+
+### 🏗️ Cloud Architecture
+- **Storage**: AWS S3 (Data Lake) - `s3://kou-sato-spectral-analysis-pipeline/`
+- **Compute**: AWS Glue Interactive Sessions (PySpark)
+- **Engine**: Apache Spark 3.3 / G.1X Worker x 2
+
+### 💰 Cost-Effective Engineering
+クラウド移行における最大の懸念である「コスト」に対し、以下の**FinOps（コスト最適化）設定**をコードレベルで強制適用し、最小限の費用で最大限の成果を得る設計を実現。
+- **Auto-Stop**: `%idle_timeout 10` (10分間のアイドル状態で自動シャットダウン)
+- **Minimum Resource**: `%number_of_workers 2` / `%worker_type G.1X`
+
+### 🛡️ IAM & Security Troubleshooting
+移行中、Glueサービスが自身に権限を委譲できない `AccessDeniedException (iam:PassRole)` が発生。
+- **Issue**: Glue Job Runnerが、自身に設定されたIAM Roleを計算リソースにパスする権限が不足。
+- **Solution**: インラインポリシーによる `iam:PassRole` の明示的な付与。最小権限の原則（Least Privilege）に基づき、特定のResource ARNに対してのみ許可を与えることでセキュリティと利便性を両立。
+
+![IAM Policy](./Images/iam_passrole_fix.png)
+*`iam:PassRole` 権限をインラインポリシーで追加し、権限エラーを解決*
+
+### 📊 Cloud Data Verification
+AWS S3上に構築したデータレイクから、1,500次元のスペクトルデータを直接ロードし、分散メモリ上での展開に成功。
+
+![Glue Session Ready](./Images/glue_ready.png)
+*Glue Interactive SessionがReady状態となり、クラウド上の計算資源が確保された瞬間*
+
+![Glue Data Show](./Images/glue_success_show.png)
+![Glue Data Show](./Images/glue_success_show2.png)
+
+*AWS Glue上での `df.show(5)` 実行結果。S3からのデータロードと分散処理の疎通を確認*
+
+---
+## 🛠 Behind the Scenes: The "Night of Cloud Migration" (2026-04-14)
+環境構築の試行錯誤を「キッチンの配管工事（プロ版）」に例えて整理。
+
+1. **厨房の移設(Cloud Migration)**: 自宅のキッチン(ローカル)から、巨大なホテルの厨房(AWS)へ。
+2. **入館証のトラブル(IAM PassRole)**: シェフ(Glue)が厨房に入ろうとした際、「自分自身の身分証をコンロ(Worker)に預ける権利」がないと門前払い。特例の通行許可証(PassRoleポリシー)を発行して突破。
+3. **ガス代の節約設定(Cost Control)**: 火(Worker)を最小の2口に絞り、誰もいなくなったら10分で自動消火するセンサー(Idle Timeout)を設置。プロとして「資源管理」の規律をコードに刻みました。
