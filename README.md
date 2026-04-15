@@ -215,3 +215,45 @@ AWS S3上に構築したデータレイクから、1,500次元のスペクトル
 1. **厨房の移設(Cloud Migration)**: 自宅のキッチン(ローカル)から、巨大なホテルの厨房(AWS)へ。
 2. **入館証のトラブル(IAM PassRole)**: シェフ(Glue)が厨房に入ろうとした際、「自分自身の身分証をコンロ(Worker)に預ける権利」がないと門前払い。特例の通行許可証(PassRoleポリシー)を発行して突破。
 3. **ガス代の節約設定(Cost Control)**: 火(Worker)を最小の2口に絞り、誰もいなくなったら10分で自動消火するセンサー(Idle Timeout)を設置。プロとして「資源管理」の規律をコードに刻みました。
+
+## ☁️ Cloud Transformation & Persistence: Scaling to AWS Glue (2026-04-15 Update)
+
+ローカル環境（24コア）で構築したパイプラインを AWS Glue (PySpark) へ展開し、**データレイクの構築と高速なデータ永続化（Parquet変換）**を完遂しました。
+
+### 🛡️ Storage Engineering & Troubleshooting
+1,500次元を超える巨大CSVのインジェストにおいて発生した、クラウド特有の「三重苦」をエンジニアリングで解決。
+
+1. **Bucket/Access Control (404/403)**:
+   - **課題**: S3バケットへのアクセス拒否（403 Forbidden）およびパス認識エラー（404 Not Found）。
+   - **解決**: IAMロールの `s3:GetObject` / `s3:PutObject` 権限の精査、およびS3 URIの正規化により解決。
+
+2. **Schema Inference Bottleneck**:
+   - **課題**: 1,500以上の多カラムデータに対し `inferSchema=True` を実行した際、型推論のオーバーヘッドにより処理が遅延しタイムアウトが発生。
+   - **解決**: 型推論を一旦オフにしてロードし、後述の「Naming Convention」適用後に **Parquet形式** へエクスポート。型情報をファイルメタデータに埋め込むことで、次回以降のロード速度を劇的に向上。
+
+3. **Naming Convention (Dot Problem)**:
+   - **課題**: カラム名に含まれるドット（`.`）がSpark SQLの構造体セパレータとして誤認され、`AnalysisException` を誘発。
+   - **解決**: リスト内包表記を用いた一括リネーム（`.` → `_`）を実装。
+
+### ⚡ Data Persistence Success
+変換後のデータを S3 上に Parquet 形式で永続化。分散処理基盤における「型安全」と「高速なランダムアクセス」の両立を実現しました。
+
+![Glue Success](./Images/glue_parquet_success.png)
+*AWS Glue 上で `Successfully saved to Parquet!` を確認。1,500次元のデータがクリーンなスキーマで再ロード可能になった瞬間。*
+
+### 💰 FinOps & Cost Management
+請求額 **$0.05** という最小限のコストで大規模クラウド環境を制御。
+- **Cost Monitoring**: AWS 請求ダッシュボードにて、Glue/CloudWatch/S3 のコストをモニタリング。
+- **Resource Discipline**: `Stop notebook` 操作の徹底と、自動アイドルタイムアウトの二重化による課金漏れの完全防止。
+
+![AWS Billing](./Images/aws_billing_005.png)
+*実際の AWS 請求画面。コスト意識を持ち、制御下でクラウド資源を活用している証明。*
+
+---
+
+## 🛠 Behind the Scenes: The "Day of Persistence" (2026-04-15)
+本日の奮闘を「キッチンの配管工事（仕上げ編）」に例えて整理。
+
+1. **厨房の住所不定（NoSuchBucket）**: ホテルの厨房へ向かうも、住所（URI）の書き間違いで路頭に迷う。正確な地図（S3 URI）を再指定して到着。
+2. **業務用冷蔵庫のロック（Access Denied）**: 厨房には入れたが、冷蔵庫（S3）を開ける鍵（IAM権限）を持っていないことが判明。管理人（IAM Policy）に交渉してマスターキーを取得。
+3. **食材の「超冷凍」保存（Parquet変換）**: 生の食材（CSV）は傷みやすく、毎回検品（型推論）に時間がかかる。そこで、検品済みの食材を最新の冷凍パック（Parquet）に詰めて保存。明日からはレンジでチンするだけで、検品なしの即戦力食材として使える状態を構築。
