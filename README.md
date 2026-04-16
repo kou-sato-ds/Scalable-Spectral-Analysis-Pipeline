@@ -12,6 +12,20 @@
 本プロジェクトは、SIGNATEの「近赤外研究会 スペクトル分析チャレンジ」を題材に、高次元なスペクトルデータから樹種を分類するパイプラインを構築したものです。
 単なるモデル構築に留まらず、**木材科学のドメイン知識**を特徴量エンジニアリングに融合させ、**Apache Spark** による分散並列処理基盤（24コア活用）を統合した、実務直結型のエンジニアリング手法を採用しています。
 
+## 🛠 Tech Stack
+
+本パイプラインは、最新のデータエンジニアリング・スタックを組み合わせて構築されています。
+
+| Category | Technology | Description |
+| :--- | :--- | :--- |
+| **Language** | Python 3.11 / 3.14 (Preview) | 最新の言語仕様に基づいた堅牢な実装 |
+| **Data Processing** | Apache Spark 3.5.0 / 4.1.1 | 分散並列処理による大規模データハンドリング |
+| **Infrastructure** | Docker / AWS Glue | ローカル擬似分散環境とクラウドスケーラビリティの融合 |
+| **Compute** | Java 21 (LTS) | 最新世代JVMによるメモリ管理とパフォーマンス最適化 |
+| **Data Storage** | Apache Parquet / AWS S3 | スキーマ情報を保持した高速なデータ永続化 |
+| **ML Framework** | LightGBM | 分散環境に最適化された勾配ブーティング決定木 |
+| **Validation** | Pydantic | 1,500次元超の入力データに対する厳格な型定義とバリデーション |
+
 ## 🏗️ Architecture & Pipeline
 
 1.  **Distributed Preprocessing**: PySparkを用いた1,500次元超のスペクトルデータのベクトル化・Parquet変換。
