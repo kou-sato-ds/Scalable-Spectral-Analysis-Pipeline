@@ -55,7 +55,20 @@
 
 ![vscode](./Images/vscode.png)
 *実務を想定し、submissionsやadrを含む洗練されたディレクトリ構造で管理*
-## 💡 Key Challenges & Solutions (ADR: 実装の意思決定)
+
+## 💡 Architecture Decision Records (ADR: 実装の意思決定記録)
+
+本プロジェクトでは、単なるコードの実装に留まらず、技術選定の意図、背景、およびトレードオフを透明化するため、**ADR (Architecture Decision Records)** 形式で全記録を残しています。
+
+| ID | 決定事項 (Topic) | 核心的な意思決定 (Key Decision) |
+| :--- | :--- | :--- |
+| **[ADR 0001](./adr/0001-use-pyspark.md)** | **分散処理基盤の導入** | 1,500次元超のデータ増大に耐えうる、DockerベースのMaster/Worker分散処理構造を定義。 |
+| **[ADR 0002](./adr/0002-infrastructure-update.md)** | **Java 21 (LTS) への移行** | Debian環境におけるJava 17の廃止を契機に、最新のLTS世代へインフラをモダン化。 |
+| **[ADR 0003](./adr/0003-use-pandas-udf.md)** | **Pandas UDF (Arrow) の採用** | NumPyの物理演算ロジックを、Apache Arrow経由で高速に分散実行するパイプラインを構築。 |
+| **[ADR 0004](./adr/0004-Java21-Spark3.5.0-Infrastructure-Optimization.md)** | **JVMインフラの最適化** | `--add-opens` オプションの注入によりJava 21のメモリ制約を突破し、24コアをフル解放。 |
+| **[ADR 0005](./adr/0005-aws-glue-migration.md)** | **AWS Glueへのクラウド移行** | S3をデータレイク、Glueを計算エンジンとし、FinOpsに基づいたコスト自動制御を実装。 |
+
+---
 
 ### 1\. ドメイン知識をコードに変換する「物理的特徴量合成」
 
