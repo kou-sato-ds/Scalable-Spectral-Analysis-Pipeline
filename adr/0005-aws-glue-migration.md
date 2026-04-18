@@ -37,9 +37,8 @@
 
 *AWS Glue上でのデータロード成功画面（2026-04-14）*
 
-![Glue Data Show](./Images/glue_success_show.png)
-![Glue Data Show](./Images/glue_success_show2.png)
-
+![Glue Data Show](../Images/glue_success_show.png)
+![Glue Data Show](../Images/glue_success_show2.png)
 
 
 ## 参照
