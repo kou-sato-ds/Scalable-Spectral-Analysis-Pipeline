@@ -28,6 +28,43 @@
 
 ## 🏗️ Architecture & Pipeline
 
+graph TD
+    subgraph "Data Storage"
+        S3[AWS S3 Data Lake]
+        PQ[Apache Parquet Files]
+    end
+
+    subgraph "Processing Layer (Challenge 6:4 Strategy)"
+        G[AWS Glue / PySpark]
+        D[Docker / Spark 24 Cores]
+        UDF[Pandas UDF / Apache Arrow]
+    end
+
+    subgraph "Quality & Reliability"
+        V[Pydantic Validation]
+        GA[GitHub Actions / CI]
+    end
+
+    subgraph "Machine Learning"
+        LGBM[LightGBM Ensemble]
+        CV[5-fold Cross Validation]
+    end
+
+    S3 --> G
+    G --> PQ
+    D --> UDF
+    PQ --> D
+    UDF --> V
+    V --> GA
+    GA --> LGBM
+    LGBM --> CV
+    CV --> Output[Robust Submission CSV]
+
+    style G fill:#FF9900,stroke:#333,color:#fff
+    style D fill:#326CE5,stroke:#333,color:#fff
+    style GA fill:#2088FF,stroke:#333,color:#fff
+    style LGBM fill:#108548,stroke:#333,color:#fff
+
 1.  **Distributed Preprocessing**: PySparkを用いた1,500次元超のスペクトルデータのベクトル化・Parquet変換。
 2.  **Domain Feature Engineering**: 近赤外分光法(NIR)の物理的特性に基づき、SNV補正や1次微分を実装。
 3.  **Scalable Training**: LightGBMを用いた 5-fold CV。Sparkを活用したスケーラブルな分散学習。
@@ -314,3 +351,21 @@ AWS S3上に構築したデータレイクから、1,500次元のスペクトル
 
 - **賞味期限の設定（S3 Lifecycle）**: どんなに良い食材（データ）も、出しっぱなしにすればコストという名の毒に変わります。1日経ったら自動で片付ける仕組みを導入しました。
 - **火災報知器の設置（Budgets）**: ガス代（課金額）が予定を超えたらベルが鳴るようにし、安心感を持って開発に集中できる環境を整えました。
+  
+---
+## 🚀 Future Roadmap: Path to 100pt Mastery (2026-11 Target)
+
+現在のポートフォリオをプロフェッショナル・データエンジニアへと昇華させるため、以下の優先順位でブラッシュアップの予定
+
+### 📅 Immediate Action Items (Next Sprint)
+1. **Reliability**: GitHub Actionsを用いた「統計的データ品質バリデーション」のCIパイプライン実装（異常値検知の自動化）。
+2. **Observability**: **Mermaid.js** を用いた、S3からGlue/Sparkを経てモデルに至るデータフローの図解化。
+3. **Standardization**: DEAプロセスの技術マニュアル整備。
+
+### 🗺️ Long-term Strategy (Towards Nov 2026)
+
+| Phase | Focus | Key Milestone / Certification |
+| :--- | :--- | :--- |
+| **PHASE 1 (Apr-Jun)** | **理論と実装の融合** | 統計検定2級 取得 / DEA分散処理実装の完遂 |
+| **PHASE 2 (Jul-Sep)** | **クラウド・AIの統合** | G検定・AWS DEA取得 / MLOpsパイプライン構築 |
+| **PHASE 3 (Oct-Nov)** | **実績の集大成** | 3年勤務達成 /戦略的挑戦 |11月の目標達成に向け、一日一歩の「写経と実装」を継続 | 
