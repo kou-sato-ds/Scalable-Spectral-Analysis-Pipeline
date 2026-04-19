@@ -27,59 +27,72 @@
 | **Validation** | Pydantic | 1,500次元超の入力データに対する厳格な型定義とバリデーション |
 
 ## 🏗️ Architecture & Pipeline
+### 🌐 Data Lineage & Process Flow
 
 ```mermaid
 
-graph TD
-    subgraph "Data Storage"
-        S3[AWS S3 Data Lake]
-        PQ[Apache Parquet Files]
+graph LR
+    subgraph "Raw Layer (S3/Local)"
+        RAW[[dummy_spectral_data.csv]]
+        META[sample_submit.csv]
     end
 
-    subgraph "Processing Layer (Challenge 6:4 Strategy)"
-        G[AWS Glue / PySpark]
-        D[Docker / Spark 24 Cores]
-        UDF[Pandas UDF / Apache Arrow]
+    subgraph "Validation Layer (Pydantic)"
+        VAL{Data Guard}
+        VAL -- Fail --> ALERT[CI/CD Blocked]
+        VAL -- Pass --> PROC
     end
 
-    subgraph "Quality & Reliability"
-        V[Pydantic Validation]
-        GA[GitHub Actions / CI]
+    subgraph "Feature Engineering (PySpark/Pandas UDF)"
+        PROC[Base Reflectance] --> SNV[SNV Normalization]
+        SNV --> DIFF[1st Derivative]
+        DIFF --> RATIO[Absorption Ratios]
+        RATIO --> INTEGRAL[Peak Area Extraction]
     end
 
-    subgraph "Machine Learning"
-        LGBM[LightGBM Ensemble]
-        CV[5-fold Cross Validation]
+    subgraph "Modeling Layer (LightGBM)"
+        FE_VEC[3,000+ Dim Vector] --> CV[5-fold Cross Validation]
+        CV --> ENS[Ensemble Model]
     end
 
-    S3 --> G
-    G --> PQ
-    D --> UDF
-    PQ --> D
-    UDF --> V
-    V --> GA
-    GA --> LGBM
-    LGBM --> CV
-    CV --> Output[Robust Submission CSV]
+    subgraph "Output Layer"
+        ENS --> JOIN{Left Join Check}
+        META --> JOIN
+        JOIN --> SUB[Final Submission.csv]
+    end
 
-    style G fill:#FF9900,stroke:#333,color:#fff
-    style D fill:#326CE5,stroke:#333,color:#fff
-    style GA fill:#2088FF,stroke:#333,color:#fff
-    style LGBM fill:#108548,stroke:#333,color:#fff
+    RAW --> VAL
+    style VAL fill:#f96,stroke:#333,stroke-width:2px
+    style PROC fill:#bbf,stroke:#333
+    style SNV fill:#bbf,stroke:#333
+    style DIFF fill:#bbf,stroke:#333
+    style SUB fill:#9f9,stroke:#333,stroke-width:2px
 
 ```
 
-1.  **Distributed Preprocessing**: PySparkを用いた1,500次元超のスペクトルデータのベクトル化・Parquet変換。
-2.  **Domain Feature Engineering**: 近赤外分光法(NIR)の物理的特性に基づき、SNV補正や1次微分を実装。
-3.  **Scalable Training**: LightGBMを用いた 5-fold CV。Sparkを活用したスケーラブルな分散学習。
-4.  **Robust Inference Engine**: 訓練/テストデータの次元不一致補正、およびテンプレートマージによる完全な提出フォーマット保証。
-5.  **Modern JVM Infrastructure**: **Java 21** 世代の厳格なメモリ保護を突破する JVM チューニングを施した Docker 基盤。
+### 💡 Data Lineage Design Decisions (データリネージ設計方針)
 
-### 🛡️ Robust Data Validation
+本パイプラインでは、データの信頼性と解析精度を両立させるため、以下の設計思想に基づき実装しています。
 
-  - **Pydantic Guard**: 1,556次元のスペクトル形状を厳格にチェック。
-  - **Schema Enforcement**: 分散処理の各ステージで、型の不整合や次元の欠落を許さない堅牢なパイプライン。
-  - **Hybrid Processing**: Sparkの分散力と、NumPyの高度な物理演算を「Pandas UDF (Apache Arrow)」で融合。
+1. **Gatekeeper Pattern (Pydantic Validation)**: 
+   - 1,500次元超のスペクトルデータは、わずかな欠損や異常値が勾配ブースティングモデル（LightGBM）の挙動を不安定にします。前処理の「前」に厳格なバリデーション層（Pydantic）を設けることで、異常データの伝播を即座に遮断（Fail-Fast）します。
+
+2. **Ordered Preprocessing (SNV → Derivative)**:
+   - 木材表面の個体差や測定時の散乱ノイズを抑制するため、まず**SNV（標準正規変量変換）**でベースラインを安定化させます。その後に**1次微分**を適用することで、物理的なノイズを増幅させることなく、物質固有の吸収ピーク（特徴量）を鮮明に抽出する順序を採用しています。
+
+3. **Template-Driven Integration (Final Left-Join)**:
+   - 実務における「提出データの不整合」を防ぐため、予測結果を直接出力するのではなく、公式の `sample_submit.csv` をマスターとした Left-Join 結合を最終工程に配置。これにより、行数不足や順序の不一致によるエラーを100%防止しています。
+
+---
+
+### 🛡️ Pipeline Highlights
+
+* **Distributed Preprocessing**: PySparkを用いた1,500次元超のスペクトルデータのベクトル化・Parquet変換。
+* **Domain Feature Engineering**: 近赤外分光法(NIR)の物理的特性に基づき、SNV補正や1次微分を実装。
+* **Scalable Training**: LightGBMを用いた 5-fold CV。Sparkを活用したスケーラブルな分散学習。
+* **Robust Inference Engine**: 訓練/テストデータの次元不一致補正、およびテンプレートマージによる完全な提出フォーマット保証。
+* **Modern JVM Infrastructure**: **Java 21** 世代の厳格なメモリ保護を突破する JVM チューニングを施した Docker 基盤。
+```
 
 ### 🔧 Infrastructure & Scalability
 
