@@ -28,6 +28,8 @@
 
 ## 🏗️ Architecture & Pipeline
 
+```mermaid
+
 graph TD
     subgraph "Data Storage"
         S3[AWS S3 Data Lake]
@@ -64,6 +66,8 @@ graph TD
     style D fill:#326CE5,stroke:#333,color:#fff
     style GA fill:#2088FF,stroke:#333,color:#fff
     style LGBM fill:#108548,stroke:#333,color:#fff
+
+```
 
 1.  **Distributed Preprocessing**: PySparkを用いた1,500次元超のスペクトルデータのベクトル化・Parquet変換。
 2.  **Domain Feature Engineering**: 近赤外分光法(NIR)の物理的特性に基づき、SNV補正や1次微分を実装。
