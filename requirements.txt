@@ -6,7 +6,7 @@ pydantic>=2.0.0
 
 # --- Data Science Stack ---
 # 安定性を考え、1.x系の最新を指定
-numpy<2.0.0
+numpy>=2.0.0
 pandas
 scipy
 scikit-learn
