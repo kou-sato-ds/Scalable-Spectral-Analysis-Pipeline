@@ -28,3 +28,19 @@ class Discriminator(nn.Module):
 
     def forward(self, x):
         return self.main(x)
+    
+
+# src/models/gan_prototype.py の末尾に追記するイメージ
+def compute_loss(discriminator, real_data, fake_data, criterion):
+    """
+    鑑定士（D）と偽造犯（G）の「悔しさ」を計算する
+    """
+    # 本物に対する判定結果
+    real_preds = discriminator(real_data)
+    real_loss = criterion(real_preds, torch.ones_like(real_preds))
+
+    # 偽物に対する判定結果
+    fake_preds = discriminator(fake_data)
+    fake_loss = criterion(fake_preds, torch.zeros_like(fake_preds))
+
+    return real_loss + fake_loss
