@@ -44,3 +44,18 @@ def compute_loss(discriminator, real_data, fake_data, criterion):
     fake_loss = criterion(fake_preds, torch.zeros_like(fake_preds))
 
     return real_loss + fake_loss
+
+
+import torch.optim as optim
+
+def get_optimizers(generator, discriminator, lr=0.0002):
+    """
+    偽造犯(G)と鑑定士(D)それぞれの「学習の歩幅」を決める
+    """
+    # G用の最適化ツール（ベータ値などはGANの論文で推奨される設定）
+    g_optimizer = optim.Adam(generator.parameters(), lr=lr, betas=(0.5, 0.999))
+    
+    # D用の最適化ツール
+    d_optimizer = optim.Adam(discriminator.parameters(), lr=lr, betas=(0.5, 0.999))
+    
+    return g_optimizer, d_optimizer
