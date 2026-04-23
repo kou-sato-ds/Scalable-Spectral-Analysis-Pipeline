@@ -59,3 +59,20 @@ def get_optimizers(generator, discriminator, lr=0.0002):
     d_optimizer = optim.Adam(discriminator.parameters(), lr=lr, betas=(0.5, 0.999))
     
     return g_optimizer, d_optimizer
+def train_gan(generator, discriminator, g_optimizer, d_optimizer, dataloader, epochs=10):
+    """
+    GANの訓練メインループ（骨組み）
+    """
+    criterion = nn.BCELoss() # 判定の誤差を測る物差し
+
+    for epoch in range(epochs):
+        for i, real_data in enumerate(dataloader):
+            # --- 1. 鑑定士(D)の修行 ---
+            d_optimizer.zero_grad() # 記憶をリセット
+            # (ここにDの学習処理が入る)
+            
+            # --- 2. 偽造犯(G)の修行 ---
+            g_optimizer.zero_grad() # 記憶をリセット
+            # (ここにGの学習処理が入る)
+
+        print(f"Epoch [{epoch+1}/{epochs}] finished!")
