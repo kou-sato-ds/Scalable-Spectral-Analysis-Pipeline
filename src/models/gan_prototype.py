@@ -68,9 +68,14 @@ def train_gan(generator, discriminator, g_optimizer, d_optimizer, dataloader, ep
     for epoch in range(epochs):
         for i, real_data in enumerate(dataloader):
             # --- 1. 鑑定士(D)の修行 ---
-            d_optimizer.zero_grad() # 記憶をリセット
-            # (ここにDの学習処理が入る)
+            d_optimizer.zero_grad()
             
+            # 昨日の compute_loss を使って「悔しさ」を計算
+            # ※ fake_data は Generator が作ったものと仮定
+            d_loss = compute_loss(discriminator, real_data, fake_data.detach(), criterion)
+            
+            d_loss.backward()  # 「なぜ見抜けなかったか」を反省する
+            d_optimizer.step() # 反省を活かして、鑑定眼を一歩進める
             # --- 2. 偽造犯(G)の修行 ---
             g_optimizer.zero_grad() # 記憶をリセット
             # (ここにGの学習処理が入る)
