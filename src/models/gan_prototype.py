@@ -76,8 +76,17 @@ def train_gan(generator, discriminator, g_optimizer, d_optimizer, dataloader, ep
             
             d_loss.backward()  # 「なぜ見抜けなかったか」を反省する
             d_optimizer.step() # 反省を活かして、鑑定眼を一歩進める
+            
             # --- 2. 偽造犯(G)の修行 ---
-            g_optimizer.zero_grad() # 記憶をリセット
-            # (ここにGの学習処理が入る)
-
+            g_optimizer.zero_grad()
+            
+            # Gの作った偽物をDに判定させる
+            outputs = discriminator(fake_data)
+            
+            # Gの目標は「Dに本物(1)と言わせること」
+            g_loss = criterion(outputs, torch.ones_like(outputs))
+            
+            g_loss.backward()
+            g_optimizer.step()
+            
         print(f"Epoch [{epoch+1}/{epochs}] finished!")
