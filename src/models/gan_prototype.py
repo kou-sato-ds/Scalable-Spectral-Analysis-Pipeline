@@ -104,3 +104,27 @@ def train_gan(generator, discriminator, dataloader, epochs=10, z_dim=100, lr=0.0
         print(f"Epoch [{epoch+1}/{epochs}] Loss_D: {avg_d_loss:.4f}, Loss_G: {avg_g_loss:.4f}")
 
     print("Training finished!")
+
+print("Training finished!")
+
+# --- 火入れ式（動作確認用スクリプト） ---
+def test_run():
+    # 1. 最小構成のモデルとデータを用意
+    z_dim = 100
+    out_dim = 50  # 仮のスペクトルデータ長
+   
+    gen = Generator(z_dim, out_dim)
+    disc = Discriminator(out_dim)
+
+    # 2. 偽の本物データ（ダミー）を5個だけ作成
+    dummy_real = torch.randn(5, out_dim)
+    dummy_loader = [dummy_real]  # 簡易的なリスト形式のローダー
+
+    # 3. 1エポックだけ回してみる
+    print("火入れ式を開始します...")
+    train_gan(gen, disc, dummy_loader, epochs=1)
+    print("無事に1エポック完走！命が宿りました。")
+
+# このファイルを直接実行した時だけテストを動かす
+if __name__ == "__main__":
+    test_run()
