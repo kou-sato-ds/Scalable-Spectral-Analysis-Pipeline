@@ -111,7 +111,7 @@ print("Training finished!")
 def test_run():
     # 1. 最小構成のモデルとデータを用意
     z_dim = 100
-    out_dim = 50  # 仮のスペクトルデータ長
+    out_dim = 512  # 仮のスペクトルデータ長
    
     gen = Generator(z_dim, out_dim)
     disc = Discriminator(out_dim)
