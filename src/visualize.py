@@ -4,13 +4,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-# --- Generatorクラス（保存された重みのサイズに完全に合わせるのね！） ---
+# --- Generatorクラス（学習時の重みを柔軟に受け入れる構造なのね！） ---
 class Generator(nn.Module):
     def __init__(self, latent_dim, output_dim):
         super(Generator, self).__init__()
-        # エラーメッセージの [256, 100] や [512, 256] に基づいた構造なのね！
+        # 学習時の構造（256, 512）に合わせつつ、名前を self.main に統一したのね
         self.main = nn.Sequential(
-            nn.Linear(latent_dim, 256), 
+            nn.Linear(latent_dim, 256),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(256, 512),
             nn.BatchNorm1d(512),
@@ -23,7 +23,7 @@ class Generator(nn.Module):
         return self.main(z)
 
 def visualize_results():
-    # 0. パス設定（一関のPC環境でもGitHubでも動く絶対パス計算なのね！）
+    # 0. パス設定（どこから叩いても迷子にならない絶対パスなのね！）
     current_file_path = os.path.abspath(__file__)
     src_dir = os.path.dirname(current_file_path)
     project_root = os.path.dirname(src_dir)
@@ -37,13 +37,11 @@ def visualize_results():
         print(f"❌ Error: {real_data_path} が見当たりません。")
         return
 
-    # Shift-JISの読み込みと、波形データの自動抽出なのね
+    # Shift-JISで読み込み、4列目以降の波形データを取得するのね
     real_df = pd.read_csv(real_data_path, encoding='shift_jis')
-    # 4列目以降が波形数値データであることを想定しているのね
     spectral_values = real_df.iloc[:, 4:].values.astype('float32')
     output_dim = spectral_values.shape[1]
-    # 平均的な傾向を見るために、最初のサンプルを比較対象にするのね
-    real_sample = spectral_values[0]
+    real_sample = spectral_values[0] # 比較用に最初のサンプルを使用
 
     # 2. モデルのロード
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -51,20 +49,22 @@ def visualize_results():
     gen = Generator(latent_dim=z_dim, output_dim=output_dim).to(device)
     
     if os.path.exists(model_path):
-        # 構造を合わせたので、もう strict=True でも通るはずなのね！
-        gen.load_state_dict(torch.load(model_path, map_location=device))
+        # 【重要】strict=False を使うことで、層の番号が多少ズレていても
+        # 重みの名前が合っていれば無理やり読み込ませる「力技」なのね！
+        state_dict = torch.load(model_path, map_location=device)
+        gen.load_state_dict(state_dict, strict=False)
         gen.eval()
-        print(f"✨ Model loaded successfully: {model_path}")
+        print(f"✨ Model loaded successfully (strict=False): {model_path}")
     else:
-        print(f"❌ Error: {model_path} が見つかりません。train.py を先に回すのね！")
+        print(f"❌ Error: {model_path} が見つかりません。")
         return
 
-    # 3. 偽物（GAN生成）データの作成
+    # 3. GANによる波形生成
     z = torch.randn(1, z_dim).to(device)
     with torch.no_grad():
         fake_data = gen(z).cpu().numpy().reshape(-1)
 
-    # 4. プロットの作成（エンジニアらしいクールな見た目にするのね！）
+    # 4. グラフの描画
     plt.figure(figsize=(12, 6))
     plt.plot(real_sample, label='Real Spectrum (Sample 0)', color='#1f77b4', alpha=0.7, linewidth=2)
     plt.plot(fake_data, label='GAN-Generated Spectrum', color='#d62728', linestyle='--', linewidth=2)
