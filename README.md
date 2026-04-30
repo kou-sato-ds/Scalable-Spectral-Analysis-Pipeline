@@ -412,5 +412,5 @@ AWS S3上に構築したデータレイクから、1,500次元のスペクトル
 
 ## 📈 現在の成果
 - GANによるスペクトルデータの学習パイプラインが完成。
-- ![AWS Billing](./docs/images/gan_comparison.png)
+![GAN_Comparison](./docs/images/gan_comparison.png)
 にて、本物と生成波形の比較が可能に。
