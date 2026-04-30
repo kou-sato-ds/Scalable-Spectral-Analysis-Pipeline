@@ -121,7 +121,8 @@ graph LR
 | **[ADR 0003](./adr/0003-use-pandas-udf.md)** | **Pandas UDF (Arrow) の採用** | NumPyの物理演算ロジックを、Apache Arrow経由で高速に分散実行するパイプラインを構築。 |
 | **[ADR 0004](./adr/0004-Java21-Spark3.5.0-Infrastructure-Optimization.md)** | **JVMインフラの最適化** | `--add-opens` オプションの注入によりJava 21のメモリ制約を突破し、24コアをフル解放。 |
 | **[ADR 0005](./adr/0005-aws-glue-migration.md)** | **AWS Glueへのクラウド移行** | S3をデータレイク、Glueを計算エンジンとし、FinOpsに基づいたコスト自動制御を実装。 |
-
+| **[ADR 0006](./adr/0006-data-pipeline-optimization.md)** | **パイプラインの最適化** | 特徴量生成プロセスの再設計による、計算リソースの効率化と実行速度の向上。 |
+| **[ADR 0007](./adr/0007-handle-generator-mismatch.md)** | **Generatorモデルの不一致対応** | `strict=False` オプションと層の次元数修正により、学習済みモデルの柔軟なロードを実現。 |
 ---
 
 ### 1\. ドメイン知識をコードに変換する「物理的特徴量合成」
@@ -412,5 +413,6 @@ AWS S3上に構築したデータレイクから、1,500次元のスペクトル
 
 ## 📈 現在の成果
 - GANによるスペクトルデータの学習パイプラインが完成。
-![GAN_Comparison](./docs/images/gan_comparison.png)
+
+![GAN Comparison Result](./docs/images/gan_comparison.png)
 にて、本物と生成波形の比較が可能に。
